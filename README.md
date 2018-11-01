@@ -62,7 +62,7 @@ resource "aws_instance" "node" {
 # Add ansible module
 module "node-ansible-config" {
   source = "GROG/ansible-provisioning-role/null"
-  version = v0.0.1
+  version = "0.0.2"
 
   # Target, this can be a comma separated list
   target = "${aws_instance.node.public_ip}"
@@ -104,7 +104,7 @@ reverse order is used.
 | Variable | Description | Type | Default value |
 |----------|-------------|------|---------------|
 | `target` | Target the roles will be applied on | `string` | |
-| `variables` | Ansible variables which will be passed with `-e` | `map` | `{}` |
+| `variables` | Ansible variables which will be passed with `-e` | `map` | |
 | `arguments` | Ansible command arguments | `[]string` | `["-b"]` |
 | `environment` | Environment variables that are set | `[]string` | `["ANSIBLE_NOCOWS=true", "ANSIBLE_RETRY_FILES=false"]` |
 | `on_destroy_failure` | What to do on deprovisioning failure | `"continue"` or `"fail"`  | `continue` |
