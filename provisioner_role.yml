@@ -1,0 +1,45 @@
+# Show current role
+- debug:
+    msg: "Handling {{ role.name }} ({{ role.source }})"
+
+# Gather facts if not already done, and role is no setup role
+- name: Gather facts
+  setup:
+  when:
+    - ansible_facts == {}
+    - not (role.setup | default(false) | bool)
+
+# Install the role
+- name: Install role
+  command: "ansible-galaxy install {{ role.source }} --force"
+  become: no
+  delegate_to: localhost
+
+# Install role requirements
+# This prevents role dependencies from auto-running on destroy.
+- name: Install role requirements
+  include_role:
+    name: "{{ role.name }}"
+    tasks_from: "requirements.yml"
+  become: no
+  delegate_to: localhost
+  when:
+    - role.install_requirements | default(true)
+
+# Run provisioning tasks
+- name: Provision Role
+  include_role:
+    name: "{{ role.name }}"
+    tasks_from: "create.yml"
+  remote_user: "{{ role.setup_user | default(remote_user)}}"
+  when:
+    - provisioner == "create"
+
+# Run deprovisioning tasks
+- name: Deprovision Role
+  include_role:
+    name: "{{ role.name }}"
+    tasks_from: "destroy.yml"
+  when:
+    - provisioner == "destroy"
+    - not (role.setup | default(false) | bool)

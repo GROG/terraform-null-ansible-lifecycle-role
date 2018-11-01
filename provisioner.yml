@@ -1,0 +1,12 @@
+---
+- hosts: all
+  gather_facts: false
+  tasks:
+    - name: Setup, Provision, Deprovision Roles
+      include_tasks: provisioner_role.yml
+      with_flattened:
+        # Reverses order when deprovisioning
+        - "{{ provisioning_roles if provisioner=='create' else [] }}"
+        - "{{ (provisioning_roles | reverse | list) if provisioner=='destroy' else [] }}"
+      loop_control:
+        loop_var: role
