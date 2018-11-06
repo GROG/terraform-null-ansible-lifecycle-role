@@ -32,7 +32,7 @@
     tasks_from: "create.yml"
   vars:
     role_vars: "{{ role.vars | default({}) }}"
-  remote_user: "{{ role.setup_user | default(remote_user)}}"
+    remote_user: "{{ role.remote_user | default(remote_user )}}"
   when:
     - provisioner == "create"
 

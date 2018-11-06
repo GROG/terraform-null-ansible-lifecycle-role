@@ -117,10 +117,10 @@ following keys;
 |-----|-------------|----------|---------|
 | `name` | The name of the role | `yes` | |
 | `source` | The source of the role | `yes` | |
+| `remote_user` | Remote user for this role | `no` | `{{ remote_user }}` |
 | `gather_facts` | Boolean to enable/disable fact gathering | `no` | `true` |
-| `vars` | Dict assigned to the `{{ role_vars }}` variable | `no` | `{}` |
-| `setup_user` | Alternative Ansible/remote user used for this role | `no` | `{{ remote_user }}` |
 | `install_requirements` | Should `tasks/requirements.yml` be run | `no` | `true` |
+| `vars` | Dict assigned to the `{{ role_vars }}` variable | `no` | `{}` |
 
 The `variables` map can also include a `global_vars` dict for which each
 key/value pair will be set with the `set_fact` module. This could be handy as
