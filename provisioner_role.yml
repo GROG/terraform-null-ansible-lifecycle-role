@@ -30,6 +30,8 @@
   include_role:
     name: "{{ role.name }}"
     tasks_from: "create.yml"
+  vars:
+    role_vars: "{{ role.vars | default({}) }}"
   remote_user: "{{ role.setup_user | default(remote_user)}}"
   when:
     - provisioner == "create"

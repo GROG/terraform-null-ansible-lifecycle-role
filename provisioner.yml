@@ -2,6 +2,10 @@
 - hosts: all
   gather_facts: false
   tasks:
+    - name: Global variables (less agressive then normal globals)
+      set_fact: {"{{ item.key }}": "{{ item.value }}"}
+      with_dict: "{{ global_vars | default({}) }}"
+
     - name: Setup, Provision, Deprovision Roles
       include_tasks: provisioner_role.yml
       with_flattened:
