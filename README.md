@@ -113,13 +113,13 @@ The `variables` map **must** contain a `provisioning_roles` list with the roles
 that should be applied. Each entry in this list is a map, which can have
 following keys;
 
-| Key | Description | required |
-|-----|-------------|----------|
-| `name` | The name of the role | `yes` |
-| `source` | The source of the role | `yes` |
-| `setup` | Boolean to disable fact gathering (default false) | `no` |
-| `setup_user` | Alternative Ansible/remote user used for this role | `no` |
-| `install_requirements` | Should `tasks/requirements.yml` be run? (default true) | `no` |
+| Key | Description | Required | Default |
+|-----|-------------|----------|---------|
+| `name` | The name of the role | `yes` | |
+| `source` | The source of the role | `yes` | |
+| `gather_facts` | Boolean to enable/disable fact gathering | `no` | `true` |
+| `setup_user` | Alternative Ansible/remote user used for this role | `no` | `{{ remote_user }}` |
+| `install_requirements` | Should `tasks/requirements.yml` be run | `no` | `true` |
 
 Setup variables can be used to let a role install some dependencies with the
 raw module (python, management user,...) before a more advanced role takes

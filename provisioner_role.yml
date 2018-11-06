@@ -6,8 +6,7 @@
 - name: Gather facts
   setup:
   when:
-    - ansible_facts == {}
-    - not (role.setup | default(false) | bool)
+    - ansible_facts == {} and (role.gather_facts | default(true) | bool)
 
 # Install the role
 - name: Install role
@@ -24,7 +23,7 @@
   become: no
   delegate_to: localhost
   when:
-    - role.install_requirements | default(true)
+    - role.install_requirements | default(true) | bool
 
 # Run provisioning tasks
 - name: Provision Role
@@ -42,4 +41,3 @@
     tasks_from: "destroy.yml"
   when:
     - provisioner == "destroy"
-    - not (role.setup | default(false) | bool)
