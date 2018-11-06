@@ -103,7 +103,7 @@ reverse order is used.
 
 | Variable | Description | Type | Default value |
 |----------|-------------|------|---------------|
-| `target` | Target the roles will be applied on | `string` | |
+| `hosts` | Single host or comma separated list on which te roles will be applied | `string` | |
 | `variables` | Ansible variables which will be passed with `-e` | `map` | |
 | `arguments` | Ansible command arguments | `[]string` | `["-b"]` |
 | `environment` | Environment variables that are set | `[]string` | `["ANSIBLE_NOCOWS=true", "ANSIBLE_RETRY_FILES=false"]` |
