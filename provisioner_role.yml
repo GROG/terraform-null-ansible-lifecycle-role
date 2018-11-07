@@ -31,8 +31,8 @@
     name: "{{ role.name }}"
     tasks_from: "create.yml"
   vars:
+    # Makes it cleaner to pass variables to specific roles
     role_vars: "{{ role.vars | default({}) }}"
-    remote_user: "{{ role.remote_user | default(remote_user )}}"
   when:
     - provisioner == "create"
 
