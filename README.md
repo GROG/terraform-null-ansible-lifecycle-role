@@ -62,10 +62,10 @@ resource "aws_instance" "node" {
 # Add ansible module
 module "node-ansible-config" {
   source = "GROG/ansible-provisioning-role/null"
-  version = "0.0.2"
+  version = "0.0.4"
 
   # Target, this can be a comma separated list
-  target = "${aws_instance.node.public_ip}"
+  hosts = "${aws_instance.node.public_ip}"
 
   ansible_variables = {
     # Special variable containing the roles that will be applied
@@ -74,8 +74,13 @@ module "node-ansible-config" {
         name   = "ansible-provisioning-setup"
         source = "git+ssh://git@github.com/grog/ansible-provisioning-setup"
 
-        setup      = true
-        setup_user = "root"
+        gather_facts = false
+
+        vars = {
+            setup_user     = "root"
+            some_other_var = true
+            # ...
+        }
       },
       {
         name   = "ansible-provisioning-base-node"
@@ -83,11 +88,16 @@ module "node-ansible-config" {
       }
     ]
 
-    # These are some random vars to use during provisioning
+    # These are some random vars to use during provisioning (set with -e)
     custom_setting = "1234"
     my_role_config = "test"
     # ...
 
+    # These are set with set_facts
+    global_vars = {
+        remote_user = "install"
+        # ...
+    }
   }
 }
 ```
