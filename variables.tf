@@ -1,10 +1,10 @@
-variable "target" {
+variable "hosts" {
   type = "string"
 
   description = <<EOF
-Ansible target (hostname or ip)
+Host(s) to target with Ansible
 
-This can be a comma separated list also.
+This can be a comma separated list or single host.
 EOF
 }
 

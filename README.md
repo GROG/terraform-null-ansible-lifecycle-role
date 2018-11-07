@@ -103,7 +103,7 @@ reverse order is used.
 
 | Variable | Description | Type | Default value |
 |----------|-------------|------|---------------|
-| `target` | Target the roles will be applied on | `string` | |
+| `hosts` | Single host or comma separated list on which te roles will be applied | `string` | |
 | `variables` | Ansible variables which will be passed with `-e` | `map` | |
 | `arguments` | Ansible command arguments | `[]string` | `["-b"]` |
 | `environment` | Environment variables that are set | `[]string` | `["ANSIBLE_NOCOWS=true", "ANSIBLE_RETRY_FILES=false"]` |
@@ -113,17 +113,18 @@ The `variables` map **must** contain a `provisioning_roles` list with the roles
 that should be applied. Each entry in this list is a map, which can have
 following keys;
 
-| Key | Description | required |
-|-----|-------------|----------|
-| `name` | The name of the role | `yes` |
-| `source` | The source of the role | `yes` |
-| `setup` | Boolean to disable fact gathering (default false) | `no` |
-| `setup_user` | Alternative Ansible/remote user used for this role | `no` |
-| `install_requirements` | Should `tasks/requirements.yml` be run? (default true) | `no` |
+| Key | Description | Required | Default |
+|-----|-------------|----------|---------|
+| `name` | The name of the role | `yes` | |
+| `source` | The source of the role | `yes` | |
+| `gather_facts` | Boolean to enable/disable fact gathering | `no` | `true` |
+| `install_requirements` | Should `tasks/requirements.yml` be run | `no` | `true` |
+| `vars` | Dict assigned to the `{{ role_vars }}` variable | `no` | `{}` |
 
-Setup variables can be used to let a role install some dependencies with the
-raw module (python, management user,...) before a more advanced role takes
-over. Another use-case is to wait until the server is reachable over ssh.
+The `variables` map can also include a `global_vars` dict for which each
+key/value pair will be set with the `set_fact` module. This could be handy as
+the top level vars will be set with `-e` which makes it impossible to overrule
+them for specific cases.
 
 ## Outputs
 

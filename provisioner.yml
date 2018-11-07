@@ -2,6 +2,12 @@
 - hosts: all
   gather_facts: false
   tasks:
+    # This is les "agressive" then settings variables directly from the "-e" option
+    - name: Set global facts
+      set_fact: {"{{ item.key }}": "{{ item.value }}"}
+      with_dict: "{{ global_vars | default({}) }}"
+
+    # Loop over all provided roles and run tasks
     - name: Setup, Provision, Deprovision Roles
       include_tasks: provisioner_role.yml
       with_flattened:
