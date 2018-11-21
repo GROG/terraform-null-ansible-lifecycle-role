@@ -2,7 +2,7 @@
 - hosts: all
   gather_facts: false
   tasks:
-    # This is les "agressive" then settings variables directly from the "-e" option
+    # This is less "agressive" then setting variables directly from the "-e" option
     - name: Set global facts
       set_fact: {"{{ item.key }}": "{{ item.value }}"}
       with_dict: "{{ global_vars | default({}) }}"
