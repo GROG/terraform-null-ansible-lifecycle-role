@@ -34,4 +34,4 @@
   vars:
     role_vars: "{{ role.vars | default({}) }}"
   with_items:
-    - provisioning_actions | list
+    - "{{ provisioning_actions | list }}"

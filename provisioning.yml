@@ -11,7 +11,7 @@
     - name: Setup, Provision, Deprovision Roles
       include_tasks: provisioning_role.yml
       with_items:
-        - provisioning_roles if (provisioning_order | default("normal")) != "reverse" else (provisioning_roles | reverse | list)
+        - "{{ provisioning_roles if (provisioning_order | default('normal')) != 'reverse' else (provisioning_roles | reverse | list) }}"
       when:
         - (provisioning_actions | list | length) > 0
       loop_control:
