@@ -8,15 +8,15 @@ resource "null_resource" "roles-playbook" {
     environment = "${join(" ",var.environment)}"
   }
 
-  # Create provisioner
+  # Create
   provisioner "local-exec" {
-    command = "${join(" ", var.environment)} ansible-playbook ${path.module}/provisioner.yml -e 'provisioner=create' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"
+    command = "${join(" ", var.environment)} ansible-playbook ${path.module}/provisioning.yml -e 'provisioning_actions=${join(",", var.on_create_actions)}' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"
   }
 
-  # Destroy provisioner
+  # Destroy
   provisioner "local-exec" {
     when       = "destroy"
-    command    = "${join(" ", var.environment)} ansible-playbook ${path.module}/provisioner.yml -e 'provisioner=destroy' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"
-    on_failure = "continue"
+    command    = "${join(" ", var.environment)} ansible-playbook ${path.module}/provisioning.yml -e 'provisioning_order=reverse provisioning_actions=${join(",", var.on_destroy_actions)}' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"
+    on_failure = "${var.on_destroy_failure}"
   }
 }

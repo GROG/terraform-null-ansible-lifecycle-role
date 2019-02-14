@@ -2,11 +2,12 @@
 - debug:
     msg: "Handling {{ role.name }} ({{ role.source }})"
 
-# Gather facts if not already done, and role is no setup role
+# Gather facts if not already done and not disabled
 - name: Gather facts
   setup:
   when:
-    - ansible_facts == {} and (role.gather_facts | default(true) | bool)
+    - ansible_facts == {}
+    - (role.gather_facts | default(true) | bool)
 
 # Install the role
 - name: Install role
@@ -26,20 +27,11 @@
     - role.install_requirements | default(true) | bool
 
 # Run provisioning tasks
-- name: Provision Role
+- name: Run provisioning actions
   include_role:
     name: "{{ role.name }}"
-    tasks_from: "create.yml"
+    tasks_from: "{{ item }}/main.yml"
   vars:
-    # Makes it cleaner to pass variables to specific roles
     role_vars: "{{ role.vars | default({}) }}"
-  when:
-    - provisioner == "create"
-
-# Run deprovisioning tasks
-- name: Deprovision Role
-  include_role:
-    name: "{{ role.name }}"
-    tasks_from: "destroy.yml"
-  when:
-    - provisioner == "destroy"
+  with_items:
+    - provisioning_actions | list

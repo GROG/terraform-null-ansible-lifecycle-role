@@ -13,35 +13,53 @@ suggestions)
 
 Unlike a regular role, which tries to be as general as possible, a provisioning
 role contains information about your specific setup. It should ideally only
-include other roles and provide them with the majority of there config/data
+include other roles and provide them with the majority of their config/data
 (stuff that usually goes into the `group_vars`).
 
 Node/server specific settings can then be passed to this role from Terraform,
 effectively replacing the `host_vars` data in a normal Ansible setup.
 
-Besides this conceptual difference the role **must** include a `create.yml` and
-`destroy.yml` file under the `tasks` dir.
+Provisioning roles are also ideal to use in combination with packer. Tasks for
+creating an image are separated from the instance specific setup tasks which
+makes it easy to reuse the code.
 
-- `create.yml` : Contains tasks that will be run when Terraform creates the
-  resource. You could include the regular `main.yml` here if you want.
+To keep all life cycle management code in one place a provisioning role has
+several sub directories under its tasks dir. Usually these will be `create`,
+`setup`, `update` and `destroy`. Each containing a `main.yml` and possibly
+other tasks files.
 
-- `destroy.yml` : Contains tasks that will be run when Terraform destroys the
-  resource. In a lot of setups this will just be an empty file.
+In an ideal situation Packer will run the create tasks to build an image.
+Terraform then deploys that image and runs the setup tasks. During the lifetime
+of the resource updates can be performed by regular Ansible runs running the
+update tasks. At the end of the resources lifetime Terraform runs the destroy
+tasks when it destroys the resource.
 
-An optional third `requirements.yml` file can be used to install role
-requirements without adding them to the `meta/main.yml` file. (which would run
-them automatically when destroying to) These can then be included in the
-`create.yml` file with an `include_role` task.
+An optional `requirements.yml` file can be used to install role requirements
+without adding them to the `meta/main.yml` file. (which would also run the
+tasks in the roles on destruction) These roles can then be included in the
+`create/main.yml` file with an `include_role` task.
 
 In combination with a `meta/requirements.yml` file this could look like this;
 ```yaml
+# meta/requirements.yml
+- src: user.apache
+  version: v1.0.0
+
 # tasks/requirements.yml
 
 - name: Install role dependencies
   command: "ansible-galaxy install -r {{ role_path }}/meta/requirements.yml --force"
   delegate_to: localhost
   become: false
+
+# tasks/create/main.yml
+- name: Install apache
+  include_role:
+    name: "user.apache"
 ```
+
+Provisioning roles are a fairly new concept and major changes to their
+specifications might still happen.
 
 ## Why use this module instead of a playbook?
 
@@ -51,10 +69,13 @@ decouples your Ansible config from your Terraform code which encourages re-use.
 You could even get the configuration details from an external data source and
 prevent any Ansible config inside the Terraform code.
 
+Using provisioning roles makes it easy to share Ansible code between Packer and
+Terraform.
+
 ## Usage
 
 ```hcl
-# Some resource we will configure with ansible
+# A resource we will configure with ansible
 resource "aws_instance" "node" {
     # ...
 }
@@ -62,7 +83,7 @@ resource "aws_instance" "node" {
 # Add ansible module
 module "node-ansible-config" {
   source = "GROG/ansible-provisioning-role/null"
-  version = "0.0.4"
+  version = "0.0.5"
 
   # Target, this can be a comma separated list
   hosts = "${aws_instance.node.public_ip}"
@@ -71,20 +92,17 @@ module "node-ansible-config" {
     # Special variable containing the roles that will be applied
     provisioning_roles = [
       {
-        name   = "ansible-provisioning-setup"
-        source = "git+ssh://git@github.com/grog/ansible-provisioning-setup"
-
-        gather_facts = false
+        name   = "ansible-provisioning-base_node"
+        source = "git+ssh://git@github.com/grog/ansible-provisioning-base_node"
 
         vars = {
-            setup_user     = "root"
-            some_other_var = true
+            some_var = true
             # ...
         }
       },
       {
-        name   = "ansible-provisioning-base-node"
-        source = "git+ssh://git@github.com/grog/ansible-provisioning-base-node"
+        name   = "ansible-provisioning-nomad_cluster_node"
+        source = "git+ssh://git@github.com/grog/ansible-provisioning-nomad_cluster_node"
       }
     ]
 
@@ -113,10 +131,12 @@ reverse order is used.
 
 | Variable | Description | Type | Default value |
 |----------|-------------|------|---------------|
-| `hosts` | Single host or comma separated list on which te roles will be applied | `string` | |
+| `hosts` | Single host or comma separated list on which the roles will be applied | `string` | |
 | `variables` | Ansible variables which will be passed with `-e` | `map` | |
 | `arguments` | Ansible command arguments | `[]string` | `["-b"]` |
 | `environment` | Environment variables that are set | `[]string` | `["ANSIBLE_NOCOWS=true", "ANSIBLE_RETRY_FILES=false"]` |
+| `on_create_actions` | What actions to run when creating the resource | `[]string`  | `["setup"]` |
+| `on_destroy_actions` | What actions to run when destroying the resource | `[]string`  | `["destroy"]` |
 | `on_destroy_failure` | What to do on deprovisioning failure | `"continue"` or `"fail"`  | `continue` |
 
 The `variables` map **must** contain a `provisioning_roles` list with the roles

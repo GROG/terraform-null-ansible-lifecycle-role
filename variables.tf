@@ -59,3 +59,39 @@ variable "on_destroy_failure" {
 Should we fail if the deprovisioning failed? ["conftinue","fail"] ("continue")
 EOF
 }
+
+variable "on_create_tasks" {
+  type = "list"
+  default = ["setup"]
+
+  description = <<EOF
+A list of tasks to run on creation of the object. Possible values are
+usualy "create" and "setup".
+
+The default action is to only run "setup" tasks. This
+assumes that you are using a pre baked image that already had the creation
+tasks applied.
+
+If that is not the case you should set this parameter to `["create","setup"]`.
+
+Under the hood `role/tasks/<on_create_tasks[...]>/main.yml` will be included on
+creation. It is possible to add your own custom tasks options. Just make sure
+that role/tasks/<custom_tasks>/main.yml exists.
+EOF
+}
+
+variable "on_destroy_tasks" {
+  type = "list"
+  default = ["destroy"]
+
+  description = <<EOF
+A list of tasks to run on destruction of the object. Currently the only
+option is "destroy" (or an empty list).
+
+The default options is to run the destroy tasks.
+
+Under the hood `role/tasks/<on_destroy_tasks[...]>/main.yml` will be included on
+destruction. It is possible to add your own custom tasks options. Just make sure
+that role/tasks/<custom_tasks>/main.yml exists.
+EOF
+}
