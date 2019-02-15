@@ -51,14 +51,14 @@ Environment variables that will be set when running the playbook
 EOF
 }
 
-variable "on_destroy_failure" {
-  type    = "string"
-  default = "continue"
+#variable "on_destroy_failure" {
+  #type    = "string"
+  #default = "continue"
 
-  description = <<EOF
-Should we fail if the deprovisioning failed? ["conftinue","fail"] ("continue")
-EOF
-}
+  #description = <<EOF
+#Should we fail if the deprovisioning failed? ["conftinue","fail"] ("continue")
+#EOF
+#}
 
 variable "on_create_tasks" {
   type = "list"

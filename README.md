@@ -146,7 +146,7 @@ A future release might add toggleable triggers if there is any interest for this
 | `environment` | Environment variables that are set | `[]string` | `["ANSIBLE_NOCOWS=true", "ANSIBLE_RETRY_FILES=false"]` |
 | `on_create_actions` | What actions to run when creating the resource | `[]string`  | `["setup"]` |
 | `on_destroy_actions` | What actions to run when destroying the resource | `[]string`  | `["destroy"]` |
-| `on_destroy_failure` | What to do on deprovisioning failure | `"continue"` or `"fail"`  | `continue` |
+<!--| `on_destroy_failure` | What to do on deprovisioning failure | `"continue"` or `"fail"`  | `continue` |-->
 
 The `variables` map **must** contain a `provisioning_roles` list with the roles
 that should be applied. Each entry in this list is a map, which can have
