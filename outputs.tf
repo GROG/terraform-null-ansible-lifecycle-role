@@ -4,6 +4,6 @@ output "id" {
   description = <<EOF
 Resource ID
 
-This can be used to trigger updates from other resources.
+This can be used to trigger updates for other resources.
 EOF
 }

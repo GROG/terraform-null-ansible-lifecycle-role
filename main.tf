@@ -1,13 +1,5 @@
 # Ansible roles-playbook
 resource "null_resource" "roles-playbook" {
-  # Triggers updating this resource (re-running the playbook)
-  triggers = {
-    hosts       = "${var.hosts}"
-    variables   = "${jsonencode(var.variables)}"
-    arguments   = "${join(" ", var.arguments)}"
-    environment = "${join(" ",var.environment)}"
-  }
-
   # Create
   provisioner "local-exec" {
     command = "${join(" ", var.environment)} ansible-playbook ${path.module}/provisioning.yml -e 'provisioning_actions=${join(",", var.on_create_actions)}' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"

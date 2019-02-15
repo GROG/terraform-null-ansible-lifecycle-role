@@ -123,6 +123,15 @@ module "node-ansible-config" {
 During creation Roles are applied in provided order. When destroying the
 reverse order is used.
 
+Updating parameters or variables will not trigger a new playbook run. Terraform
+is not the best way to perform updates during the lifetime of a resource.
+That's why this role will not encourage that behavior. If you do want to
+re-trigger the `on_create_actions` without running the `on_destroy_actions` you
+can taint the resource. This behavior is the result of the on destroy
+provisioners not being triggered when a resource is tainted.
+
+A future release might add toggleable triggers if there is any interest for this.
+
 ## Requirements
 
 - Ansible (v2.5+)
