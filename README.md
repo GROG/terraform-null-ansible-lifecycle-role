@@ -148,6 +148,8 @@ following keys;
 | `name` | The name of the role | `yes` | |
 | `source` | The source of the role | `yes` | |
 | `gather_facts` | Boolean to enable/disable fact gathering | `no` | `true` |
+| `enabled_actions` | Enabled provisioning actions | `no` | undefined (all actions)  |
+| `disabled_actions` | Disabled provisioning actions | `no` | `[]` |
 | `install_requirements` | Should `tasks/requirements.yml` be run | `no` | `true` |
 | `vars` | Dict assigned to the `{{ role_vars }}` variable | `no` | `{}` |
 
