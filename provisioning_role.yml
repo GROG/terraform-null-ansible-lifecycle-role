@@ -30,8 +30,13 @@
 - name: Run provisioning actions
   include_role:
     name: "{{ role.name }}"
-    tasks_from: "{{ item }}/main.yml"
+    tasks_from: "{{ provisioning_action }}/main.yml"
   vars:
     role_vars: "{{ role.vars | default({}) }}"
   with_items:
     - "{{ provisioning_actions | list }}"
+  loop_control:
+    loop_var: provisioning_action
+  when:
+    - provisioning_action not in (role.disabled_actions | default([]))
+    - (role.enabled_actions is not defined) or (provisioning_action in role.enabled_actions)
