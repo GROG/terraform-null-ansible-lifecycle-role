@@ -83,7 +83,6 @@ resource "aws_instance" "node" {
 # Add ansible module
 module "node-ansible-config" {
   source = "GROG/ansible-provisioning-role/null"
-  version = "0.0.5"
 
   # Target, this can be a comma separated list
   hosts = "${aws_instance.node.public_ip}"
