@@ -87,7 +87,7 @@ module "node-ansible-config" {
   # Target, this can be a comma separated list
   hosts = "${aws_instance.node.public_ip}"
 
-  ansible_variables = {
+  variables = {
     # Special variable containing the roles that will be applied
     provisioning_roles = [
       {
@@ -142,7 +142,7 @@ A future release might add toggleable triggers if there is any interest for this
 | `hosts` | Single host or comma separated list on which the roles will be applied | `string` | |
 | `variables` | Ansible variables which will be passed with `-e` | `map` | |
 | `arguments` | Ansible command arguments | `[]string` | `["-b"]` |
-| `environment` | Environment variables that are set | `[]string` | `["ANSIBLE_NOCOWS=true", "ANSIBLE_RETRY_FILES=false"]` |
+| `environment` | Environment variables that are set | `[]string` | `["ANSIBLE_NOCOWS=true", "ANSIBLE_RETRY_FILES=false", "ANSIBLE_HOST_KEY_CHECKING=false"]` |
 | `on_create_actions` | What actions to run when creating the resource | `[]string`  | `["setup"]` |
 | `on_destroy_actions` | What actions to run when destroying the resource | `[]string`  | `["destroy"]` |
 <!--| `on_destroy_failure` | What to do on deprovisioning failure | `"continue"` or `"fail"`  | `continue` |-->

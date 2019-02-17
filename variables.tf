@@ -44,6 +44,7 @@ variable "environment" {
   default = [
     "ANSIBLE_NOCOWS=true",
     "ANSIBLE_RETRY_FILES_ENABLED=false",
+    "ANSIBLE_HOST_KEY_CHECKING=false",
   ]
 
   description = <<EOF
