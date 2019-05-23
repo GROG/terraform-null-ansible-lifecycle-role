@@ -9,7 +9,7 @@ EOF
 }
 
 variable "variables" {
-  type = map(any)
+  type = any
 
   description = <<EOF
 Ansible variables passed to the provisioning playbook.
