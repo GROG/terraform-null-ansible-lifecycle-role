@@ -1,5 +1,5 @@
 variable "hosts" {
-  type = "string"
+  type = string
 
   description = <<EOF
 Host(s) to target with Ansible
@@ -9,7 +9,7 @@ EOF
 }
 
 variable "variables" {
-  type = "map"
+  type = map(string)
 
   description = <<EOF
 Ansible variables passed to the provisioning playbook.
@@ -30,39 +30,39 @@ EOF
 }
 
 variable "arguments" {
-  type    = "list"
-  default = ["-b"]
+type    = list(string)
+default = ["-b"]
 
-  description = <<EOF
+description = <<EOF
 Command line arguments passed to ansible
 EOF
 }
 
 variable "environment" {
-  type = "list"
+type = list(string)
 
-  default = [
-    "ANSIBLE_NOCOWS=true",
-    "ANSIBLE_RETRY_FILES_ENABLED=false",
-    "ANSIBLE_HOST_KEY_CHECKING=false",
-  ]
+default = [
+"ANSIBLE_NOCOWS=true",
+"ANSIBLE_RETRY_FILES_ENABLED=false",
+"ANSIBLE_HOST_KEY_CHECKING=false",
+]
 
-  description = <<EOF
+description = <<EOF
 Environment variables that will be set when running the playbook
 EOF
 }
 
 #variable "on_destroy_failure" {
-  #type    = "string"
-  #default = "continue"
+#type    = "string"
+#default = "continue"
 
-  #description = <<EOF
+#description = <<EOF
 #Should we fail if the deprovisioning failed? ["conftinue","fail"] ("continue")
 #EOF
 #}
 
 variable "on_create_actions" {
-  type = "list"
+  type    = list(string)
   default = ["setup"]
 
   description = <<EOF
@@ -78,7 +78,7 @@ EOF
 }
 
 variable "on_destroy_actions" {
-  type = "list"
+  type = list(string)
   default = ["destroy"]
 
   description = <<EOF
@@ -87,3 +87,4 @@ A list of actions to run on destruction of the object.
 The default options is to run the destroy tasks.
 EOF
 }
+

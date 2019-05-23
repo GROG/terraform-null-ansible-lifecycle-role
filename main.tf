@@ -1,10 +1,10 @@
 locals {
   create_vars = {
-    provisioning_actions = "${var.on_create_actions}"
+    provisioning_actions = var.on_create_actions
   }
   destroy_vars = {
-    provisioning_order = "reverse"
-    provisioning_actions = "${var.on_destroy_actions}"
+    provisioning_order   = "reverse"
+    provisioning_actions = var.on_destroy_actions
   }
 }
 
@@ -17,10 +17,11 @@ resource "null_resource" "roles-playbook" {
 
   # Destroy
   provisioner "local-exec" {
-    when       = "destroy"
+    when       = destroy
     command    = "${join(" ", var.environment)} ansible-playbook ${path.module}/provisioning.yml -e '${jsonencode(local.destroy_vars)}' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"
-    on_failure = "continue"
+    on_failure = continue
     # @TODO: Update when #19679 is fixed
     #on_failure = "${var.on_destroy_failure}"
   }
 }
+
