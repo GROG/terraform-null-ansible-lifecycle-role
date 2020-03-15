@@ -1,3 +1,5 @@
+###############################################################################
+
 variable "hosts" {
   type = string
 
@@ -12,10 +14,10 @@ variable "variables" {
   type = any
 
   description = <<EOF
-Ansible variables passed to the provisioning playbook.
+Ansible variables passed to the lifecycle playbook.
 
-Must contain 'provisioning_roles' variable!
-  provisioning_roles: [
+Must contain 'lifecycle_roles' variable!
+  lifecycle_roles: [
     {
       name: "example"
       source: "git+ssh://git@gitlab.com/myorg/ansible-role-example,v1.2.3"
@@ -30,50 +32,50 @@ EOF
 }
 
 variable "arguments" {
-type    = list(string)
-default = ["-b"]
+  type    = list(string)
+  default = ["-b"]
 
-description = <<EOF
+  description = <<EOF
 Command line arguments passed to ansible
 EOF
 }
 
 variable "environment" {
-type = list(string)
+  type = list(string)
 
-default = [
-"ANSIBLE_NOCOWS=true",
-"ANSIBLE_RETRY_FILES_ENABLED=false",
-"ANSIBLE_HOST_KEY_CHECKING=false",
-]
+  default = [
+  "ANSIBLE_NOCOWS=true",
+  "ANSIBLE_RETRY_FILES_ENABLED=false",
+  "ANSIBLE_HOST_KEY_CHECKING=false",
+  ]
 
-description = <<EOF
+  description = <<EOF
 Environment variables that will be set when running the playbook
 EOF
 }
 
-#variable "on_destroy_failure" {
-#type    = "string"
-#default = "continue"
+variable "on_destroy_failure" {
+  type    = "string"
+  default = "continue"
 
-#description = <<EOF
-#Should we fail if the deprovisioning failed? ["conftinue","fail"] ("continue")
-#EOF
-#}
+  description = <<EOF
+Should we fail if the destroy action failed? ["conftinue","fail"] ("continue")
+EOF
+}
 
 variable "on_create_actions" {
   type    = list(string)
-  default = ["setup"]
+  default = ["deploy"]
 
   description = <<EOF
 A list of actions to run on creation of the object. Possible values are
-usualy "create" and "setup".
+usualy "build" and "deploy".
 
-The default action is to only run "setup" tasks. This
-assumes that you are using a pre baked image that already had the creation
+The default action is to only run "deploy" tasks. This
+assumes that you are using a pre baked image that already had the build
 tasks applied.
 
-If that is not the case you should set this parameter to `["create","setup"]`.
+If that is not the case you should set this parameter to `["build","deploy"]`.
 EOF
 }
 
@@ -88,3 +90,4 @@ The default options is to run the destroy tasks.
 EOF
 }
 
+###############################################################################

@@ -8,11 +8,11 @@
       with_dict: "{{ global_vars | default({}) }}"
 
     # Loop over all provided roles and run tasks
-    - name: Setup, Provision, Deprovision Roles
-      include_tasks: provisioning_role.yml
+    - name: Run lifecycle roles
+      include_tasks: lifecycle_role.yml
       with_items:
-        - "{{ provisioning_roles if (provisioning_order | default('normal')) != 'reverse' else (provisioning_roles | reverse | list) }}"
+        - "{{ lifecycle_roles if (lifecycle_order | default('normal')) != 'reverse' else (lifecycle_roles | reverse | list) }}"
       when:
-        - (provisioning_actions | list | length) > 0
+        - (lifecycle_actions | list | length) > 0
       loop_control:
         loop_var: role

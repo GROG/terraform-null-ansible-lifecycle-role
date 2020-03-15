@@ -1,17 +1,16 @@
-# terraform-null-ansible-provisioning-role
+# terraform-null-ansible-lifecycle-role
 
 [![Latest tag][tag_image]][tag_url]
 [![Gitter chat][gitter_image]][gitter_url]
 
-A Terraform module for applying Ansible "provisioning" roles.
+A Terraform module for applying Ansible "lifecycle" roles.
 
-## What are Ansible provisioning roles?
+## What are Ansible lifecycle roles?
 
-An Ansible provisioning role is a very opinionated high level role containing
-lots of configuration details. (Please contact me with better naming
-suggestions)
+An Ansible lifecycle role is a very opinionated high level role for managing an
+infrastructure component.
 
-Unlike a regular role, which tries to be as general as possible, a provisioning
+Unlike a regular role, which tries to be as general as possible, a lifecycle
 role contains information about your specific setup. It should ideally only
 include other roles and provide them with the majority of their config/data
 (stuff that usually goes into the `group_vars`).
@@ -19,25 +18,26 @@ include other roles and provide them with the majority of their config/data
 Node/server specific settings can then be passed to this role from Terraform,
 effectively replacing the `host_vars` data in a normal Ansible setup.
 
-Provisioning roles are also ideal to use in combination with packer. Tasks for
-creating an image are separated from the instance specific setup tasks which
-makes it easy to reuse the code.
+Lifecycle roles are also ideal to use in combination with packer. Tasks for
+building an image are separated from the instance specific setup/deploy tasks
+which makes it easy to reuse the code.
 
-To keep all life cycle management code in one place a provisioning role has
-several sub directories under its tasks dir. Usually these will be `create`,
-`setup`, `update` and `destroy`. Each containing a `main.yml` and possibly
+To keep all life cycle management code in one place a lifecycle role has
+several sub directories under its tasks dir. Usually these will be `build`,
+`deploy` and `destroy`. Each containing a `main.yml` and possibly
 other tasks files.
 
-In an ideal situation Packer will run the create tasks to build an image.
-Terraform then deploys that image and runs the setup tasks. During the lifetime
-of the resource updates can be performed by regular Ansible runs running the
-update tasks. At the end of the resources lifetime Terraform runs the destroy
-tasks when it destroys the resource.
+In an ideal situation Packer will run the build tasks to build an image.
+Terraform then deploys that image and runs the deploy tasks to do the instance
+specific setup. During the lifetime of the resource operational tasks
+(update,backup,restore,...) can be done by several playbooks bundled with these
+roles (Ansible collections). At the end of the resources lifetime Terraform
+runs the destroy tasks when it destroys the resource.
 
 An optional `requirements.yml` file can be used to install role requirements
 without adding them to the `meta/main.yml` file. (which would also run the
 tasks in the roles on destruction) These roles can then be included in the
-`create/main.yml` file with an `include_role` task.
+`build/main.yml` file with an `include_role` task.
 
 In combination with a `meta/requirements.yml` file this could look like this;
 ```yaml
@@ -48,7 +48,7 @@ In combination with a `meta/requirements.yml` file this could look like this;
 # tasks/requirements.yml
 
 - name: Install role dependencies
-  command: "ansible-galaxy install -r {{ role_path }}/meta/requirements.yml --force"
+  command: "ansible-galaxy install -r {{ role_path }}/meta/requirements.yml"
   delegate_to: localhost
   become: false
 
@@ -58,7 +58,7 @@ In combination with a `meta/requirements.yml` file this could look like this;
     name: "user.apache"
 ```
 
-Provisioning roles are a fairly new concept and major changes to their
+Lifecycle roles are a fairly new concept and major changes to their
 specifications might still happen.
 
 ## Why use this module instead of a playbook?
@@ -69,7 +69,7 @@ decouples your Ansible config from your Terraform code which encourages re-use.
 You could even get the configuration details from an external data source and
 prevent any Ansible config inside the Terraform code.
 
-Using provisioning roles makes it easy to share Ansible code between Packer and
+Using lifecycle roles makes it easy to share Ansible code between Packer and
 Terraform.
 
 ## Usage
@@ -82,17 +82,17 @@ resource "aws_instance" "node" {
 
 # Add ansible module
 module "node-ansible-config" {
-  source = "GROG/ansible-provisioning-role/null"
+  source = "GROG/ansible-lifecycle-role/null"
 
   # Target, this can be a comma separated list
   hosts = "${aws_instance.node.public_ip}"
 
   variables = {
     # Special variable containing the roles that will be applied
-    provisioning_roles = [
+    lifecycle_roles = [
       {
-        name   = "ansible-provisioning-base_node"
-        source = "git+ssh://git@github.com/grog/ansible-provisioning-base_node"
+        name   = "ansible-lifecycle-base_node"
+        source = "git+ssh://git@github.com/grog/ansible-lifecycle-base_node"
 
         vars = {
             some_var = true
@@ -100,12 +100,12 @@ module "node-ansible-config" {
         }
       },
       {
-        name   = "ansible-provisioning-nomad_cluster_node"
-        source = "git+ssh://git@github.com/grog/ansible-provisioning-nomad_cluster_node"
+        name   = "ansible-lifecycle-nomad_cluster_node"
+        source = "git+ssh://git@github.com/grog/ansible-lifecycle-nomad_cluster_node"
       }
     ]
 
-    # These are some random vars to use during provisioning (set with -e)
+    # These are some random vars to use during lifecycle (set with -e)
     custom_setting = "1234"
     my_role_config = "test"
     # ...
@@ -143,11 +143,11 @@ A future release might add toggleable triggers if there is any interest for this
 | `variables` | Ansible variables which will be passed with `-e` | `map` | |
 | `arguments` | Ansible command arguments | `[]string` | `["-b"]` |
 | `environment` | Environment variables that are set | `[]string` | `["ANSIBLE_NOCOWS=true", "ANSIBLE_RETRY_FILES=false", "ANSIBLE_HOST_KEY_CHECKING=false"]` |
-| `on_create_actions` | What actions to run when creating the resource | `[]string`  | `["setup"]` |
+| `on_create_actions` | What actions to run when creating the resource | `[]string`  | `["deploy"]` |
 | `on_destroy_actions` | What actions to run when destroying the resource | `[]string`  | `["destroy"]` |
-<!--| `on_destroy_failure` | What to do on deprovisioning failure | `"continue"` or `"fail"`  | `continue` |-->
+| `on_destroy_failure` | What to do when the destroy action fails | `"continue"` or `"fail"`  | `continue` |
 
-The `variables` map **must** contain a `provisioning_roles` list with the roles
+The `variables` map **must** contain a `lifecycle_roles` list with the roles
 that should be applied. Each entry in this list is a map, which can have
 following keys;
 
@@ -156,8 +156,8 @@ following keys;
 | `name` | The name of the role | `yes` | |
 | `source` | The source of the role | `yes` | |
 | `gather_facts` | Boolean to enable/disable fact gathering | `no` | `true` |
-| `enabled_actions` | Enabled provisioning actions | `no` | undefined (all actions)  |
-| `disabled_actions` | Disabled provisioning actions | `no` | `[]` |
+| `enabled_actions` | Enabled lifecycle actions | `no` | undefined (all actions)  |
+| `disabled_actions` | Disabled lifecycle actions | `no` | `[]` |
 | `install_requirements` | Should `tasks/requirements.yml` be run | `no` | `true` |
 | `vars` | Dict assigned to the `{{ role_vars }}` variable | `no` | `{}` |
 
@@ -181,10 +181,10 @@ By [G. Roggemans][groggemans]
 ## License
 MIT
 
-[tag_image]:            https://img.shields.io/github/tag/GROG/terraform-null-ansible-provisioning-role.svg
-[tag_url]:              https://github.com/GROG/terraform-null-ansible-provisioning-role
+[tag_image]:            https://img.shields.io/github/tag/GROG/terraform-null-ansible-lifecycle-role.svg
+[tag_url]:              https://github.com/GROG/terraform-null-ansible-lifecycle-role
 [gitter_image]:         https://badges.gitter.im/GROG/chat.svg
 [gitter_url]:           https://gitter.im/GROG/chat
 
-[issues]:               https://github.com/GROG/terraform-null-ansible-provisioning-role
+[issues]:               https://github.com/GROG/terraform-null-ansible-lifecycle-role
 [groggemans]:           https://github.com/groggemans
