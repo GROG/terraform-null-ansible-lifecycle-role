@@ -1,54 +1,74 @@
 ###############################################################################
 
+# Creates a list of all role sources
+data "template_file" "versioning_helper" {
+  count = "${length(var.variables.lifecycle_roles)}"
+  template = "${lookup(var.variables.lifecycle_roles[count.index], "source")}"
+}
+
+###############################################################################
+
 locals {
-  create_vars = {
+  # Prepare variables to pass them to the ansible playbook command
+  variables   = jsonencode(var.variables)
+  arguments   = join(" ", compact(var.arguments))
+  environment = join(" ", var.environment)
+
+  # SHA1 of all role sources
+  role_version_sha1 = sha1(join(":", data.template_file.versioning_helper.*.rendered))
+  # Use customized roles path to avoid conflicting version issues
+  roles_path = "${abspath(path.root)}/.ansible/roles/${local.role_version_sha1}"
+
+  create_vars = jsonencode({
+    roles_path        = local.roles_path
     lifecycle_actions = var.on_create_actions
-  }
-  destroy_vars = {
+  })
+  destroy_vars = jsonencode({
+    roles_path        = local.roles_path
     lifecycle_order   = "reverse"
     lifecycle_actions = var.on_destroy_actions
-  }
+  })
 
-  # We use a custom roles path to avoid version conflicts while allowing role caching
-  #  (still room for improvement, as their might be conflicts between lifecycle roles)
-  environment = merge(var.environment,["ANSIBLE_ROLES_PATH=${path.module}/.ansible/roles"])
+  # These commands run the ansible playbook included in this module with the
+  # correct parameters and environment variables
+  create_command  = "ANSIBLE_ROLES_PATH=${local.roles_path} ${local.environment} ansible-playbook ${path.module}/lifecycle.yml -e '${local.create_vars}' -e '${local.variables}' -i '${var.hosts},' ${local.arguments}"
+  destroy_command = "ANSIBLE_ROLES_PATH=${local.roles_path} ${local.environment} ansible-playbook ${path.module}/lifecycle.yml -e '${local.destroy_vars}' -e '${local.variables}' -i '${var.hosts},' ${local.arguments}"
 }
 
 ###############################################################################
 # Ansible roles-playbook
+# @TODO: reduce to single resource when #19679 is fixed
 
+# on_destroy_failure == "continue"
 resource "null_resource" "roles-playbook-continue" {
-  # @TODO: Update when #19679 is fixed
-  count = "1 if on_destroy_failure == continue"
+  count = var.on_destroy_failure == "continue" ? 1 : 0
 
   # Create
   provisioner "local-exec" {
-    command = "${join(" ", var.environment)} ansible-playbook ${path.module}/lifecycle.yml -e '${jsonencode(local.create_vars)}' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"
+    command = local.create_command
   }
 
   # Destroy
   provisioner "local-exec" {
     when       = destroy
-    command    = "${join(" ", var.environment)} ansible-playbook ${path.module}/lifecycle.yml -e '${jsonencode(local.destroy_vars)}' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"
-    # @TODO: Update when #19679 is fixed
+    command    = local.destroy_command
     on_failure = continue
   }
 }
 
+# on_destroy_failure == "fail"
 resource "null_resource" "roles-playbook-fail" {
-  # @TODO: Update when #19679 is fixed
-  count = "1 if on_destroy_failure == fail"
+  count = var.on_destroy_failure == "fail" ? 1 : 0
 
   # Create
   provisioner "local-exec" {
-    command = "${join(" ", var.environment)} ansible-playbook ${path.module}/lifecycle.yml -e '${jsonencode(local.create_vars)}' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"
+    command = local.create_command
   }
 
   # Destroy
   provisioner "local-exec" {
     when       = destroy
-    command    = "${join(" ", var.environment)} ansible-playbook ${path.module}/lifecycle.yml -e '${jsonencode(local.destroy_vars)}' -e '${jsonencode(var.variables)}' -i '${var.hosts},' ${join(" ", compact(var.arguments))}"
-    # @TODO: Update when #19679 is fixed
+    command    = local.destroy_command
     on_failure = fail
   }
 }

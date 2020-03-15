@@ -1,3 +1,6 @@
+# These tasks install a lifecycle role and it's requirements.
+# Then it runs the appropriate lifecycle actions.
+
 # Show current role
 - debug:
     msg: "Handling {{ role.name }} ({{ role.source }})"
@@ -9,22 +12,27 @@
     - ansible_facts == {}
     - (role.gather_facts | default(true) | bool)
 
-# Install the role
+# Install the lifecycle role
 - name: Install role
-  command: "ansible-galaxy install {{ role.source }}"
+  command: "ansible-galaxy install {{ role.source }} -p {{ roles_path }}"
   become: no
   delegate_to: localhost
 
-# Install role requirements
+# Install the lifecycle role's requirements
 # This prevents role dependencies from auto-running on destroy.
-- name: Install role requirements
-  include_role:
-    name: "{{ role.name }}"
-    tasks_from: "requirements.yml"
+- name: Install role
+  command: "ansible-galaxy install -r {{ roles_path }}/{{role.name}}/meta/requirements.yml"
   become: no
   delegate_to: localhost
   when:
     - role.install_requirements | default(true) | bool
+
+#- name: Install role requirements
+  #include_role:
+    #name: "{{ role.name }}"
+    #tasks_from: "requirements.yml"
+  #when:
+    #- role.install_requirements | default(true) | bool
 
 # Run lifecycle tasks
 - name: Run lifecycle actions

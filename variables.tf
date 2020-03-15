@@ -21,15 +21,15 @@ Must contain 'lifecycle_roles' variable!
     {
       name: "example"
       source: "git+ssh://git@gitlab.com/myorg/ansible-role-example,v1.2.3"
-
-      # Optional
-      setup: true
-      setup_user: install
-      install_requirements: false
+      vars:
+        my_var: value
     }
   ]
 EOF
 }
+
+###############################################################################
+# Optional parameters
 
 variable "arguments" {
   type    = list(string)
@@ -50,12 +50,16 @@ variable "environment" {
   ]
 
   description = <<EOF
-Environment variables that will be set when running the playbook
+Environment variables that will be set when running the playbook.
+
+By default we set the Ansible roles path to be relative to the terraform module
+folder. By doing this the versions needed for this module won't interfere with
+other versions.
 EOF
 }
 
 variable "on_destroy_failure" {
-  type    = "string"
+  type    = string
   default = "continue"
 
   description = <<EOF

@@ -1,4 +1,5 @@
 ---
+# This playbook loops over the provided roles, installs them and runs tasks
 - hosts: all
   gather_facts: false
   tasks:
