@@ -34,28 +34,10 @@ specific setup. During the lifetime of the resource operational tasks
 roles (Ansible collections). At the end of the resources lifetime Terraform
 runs the destroy tasks when it destroys the resource.
 
-An optional `requirements.yml` file can be used to install role requirements
+An optional `meta/requirements.yml` file can be used to install role requirements
 without adding them to the `meta/main.yml` file. (which would also run the
 tasks in the roles on destruction) These roles can then be included in the
 `build/main.yml` file with an `include_role` task.
-
-In combination with a `meta/requirements.yml` file this could look like this;
-```yaml
-# meta/requirements.yml
-- src: user.apache
-  version: v1.0.0
-
-# tasks/requirements.yml
-- name: Install role dependencies
-  command: "ansible-galaxy install -r {{ role_path }}/meta/requirements.yml"
-  delegate_to: localhost
-  become: false
-
-# tasks/build/main.yml
-- name: Install apache
-  include_role:
-    name: "user.apache"
-```
 
 Lifecycle roles are a fairly new concept and major changes to their
 specifications might still happen.
@@ -92,10 +74,9 @@ module "node-ansible-config" {
       {
         name   = "ansible-lifecycle-base_node"
         source = "git+ssh://git@github.com/grog/ansible-lifecycle-base_node"
-
-        vars = {
-            some_var = true
-            # ...
+        vars   = {
+          some_var = true
+          # ...
         }
       },
       {
@@ -104,15 +85,14 @@ module "node-ansible-config" {
       }
     ]
 
-    # These are some random vars to use during lifecycle (set with -e)
-    custom_setting = "1234"
-    my_role_config = "test"
+    # Define variables provided to ansible using the -e option
+    some_variable = "1234"
     # ...
 
     # These are set with set_facts
     global_vars = {
-        remote_user = "install"
-        # ...
+      remote_user = "install"
+      # ...
     }
   }
 }
@@ -132,7 +112,7 @@ A future release might add toggleable triggers if there is any interest for this
 
 ## Requirements
 
-- Ansible (v2.5+)
+- Ansible (v2.9+)
 
 ## Inputs
 
