@@ -35,7 +35,7 @@ resource "null_resource" "roles-playbook-continue" {
   }
 }
 
-resource "null_resource" "roles-playbook" {
+resource "null_resource" "roles-playbook-fail" {
   # @TODO: Update when #19679 is fixed
   count = "1 if on_destroy_failure == fail"
 

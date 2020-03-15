@@ -46,13 +46,12 @@ In combination with a `meta/requirements.yml` file this could look like this;
   version: v1.0.0
 
 # tasks/requirements.yml
-
 - name: Install role dependencies
   command: "ansible-galaxy install -r {{ role_path }}/meta/requirements.yml"
   delegate_to: localhost
   become: false
 
-# tasks/create/main.yml
+# tasks/build/main.yml
 - name: Install apache
   include_role:
     name: "user.apache"

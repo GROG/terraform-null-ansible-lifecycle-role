@@ -75,7 +75,7 @@ The default action is to only run "deploy" tasks. This
 assumes that you are using a pre baked image that already had the build
 tasks applied.
 
-If that is not the case you should set this parameter to `["build","deploy"]`.
+If that is not the case you should set this parameter to ["build","deploy"].
 EOF
 }
 
