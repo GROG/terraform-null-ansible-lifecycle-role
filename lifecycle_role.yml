@@ -27,13 +27,6 @@
   when:
     - role.install_requirements | default(true) | bool
 
-#- name: Install role requirements
-  #include_role:
-    #name: "{{ role.name }}"
-    #tasks_from: "requirements.yml"
-  #when:
-    #- role.install_requirements | default(true) | bool
-
 # Run lifecycle tasks
 - name: Run lifecycle actions
   include_role:
