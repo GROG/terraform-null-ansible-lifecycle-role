@@ -43,6 +43,14 @@ locals {
 resource "null_resource" "roles-playbook-continue" {
   count = var.on_destroy_failure == "continue" ? 1 : 0
 
+  # @TODO: Remove when #23679 is fixed
+  triggers = {
+    destroy_command = local.destroy_command
+  }
+  lifecycle {
+    ignore_changes = [triggers["destroy_command"]]
+  }
+
   # Create
   provisioner "local-exec" {
     command = local.create_command
@@ -51,7 +59,7 @@ resource "null_resource" "roles-playbook-continue" {
   # Destroy
   provisioner "local-exec" {
     when       = destroy
-    command    = local.destroy_command
+    command    = self.triggers.destroy_command
     on_failure = continue
   }
 }
@@ -60,6 +68,14 @@ resource "null_resource" "roles-playbook-continue" {
 resource "null_resource" "roles-playbook-fail" {
   count = var.on_destroy_failure == "fail" ? 1 : 0
 
+  # @TODO: Remove when #23679 is fixed
+  triggers = {
+    destroy_command = local.destroy_command
+  }
+  lifecycle {
+    ignore_changes = [triggers["destroy_command"]]
+  }
+
   # Create
   provisioner "local-exec" {
     command = local.create_command
@@ -68,7 +84,7 @@ resource "null_resource" "roles-playbook-fail" {
   # Destroy
   provisioner "local-exec" {
     when       = destroy
-    command    = local.destroy_command
+    command    = self.triggers.destroy_command
     on_failure = fail
   }
 }
