@@ -3,7 +3,7 @@
 # Creates a list of all role sources
 data "template_file" "versioning_helper" {
   count = length(var.variables.lifecycle_roles)
-  template = "${lookup(var.variables.lifecycle_roles[count.index], "source")}"
+  template = lookup(var.variables.lifecycle_roles[count.index], "source")
 }
 
 ###############################################################################
